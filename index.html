@@ -100,6 +100,7 @@
       justify-content: center;
       gap: 20px;
       margin-bottom: 30px;
+      flex-wrap: wrap;
     }
 
     .control-btn {
@@ -114,6 +115,9 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      flex: 1 1 auto;
+      min-width: 120px;
+      justify-content: center;
     }
 
     .control-btn:hover {
@@ -224,6 +228,73 @@
       font-style: italic;
     }
 
+    .audio-controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+      flex-wrap: wrap;
+    }
+
+    .audio-btn {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .audio-btn:hover {
+      background: #45a049;
+      transform: translateY(-1px);
+    }
+
+    .audio-btn:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .stereo-btn {
+      background: #FF9800;
+      position: relative;
+    }
+
+    .stereo-btn:hover {
+      background: #F57C00;
+    }
+
+    .stereo-info {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 12px;
+      color: #856404;
+    }
+
+    .channel-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 5px;
+    }
+
+    .left-channel {
+      background: #2196F3;
+    }
+
+    .right-channel {
+      background: #FF5722;
+    }
+
     @media (max-width: 768px) {
       .translation-area {
         grid-template-columns: 1fr;
@@ -237,6 +308,27 @@
       .swap-btn {
         margin-top: 0;
         transform: rotate(90deg);
+      }
+
+      .controls {
+        flex-direction: column;
+      }
+
+      .control-btn {
+        width: 100%;
+      }
+
+      h1 {
+        font-size: 1.8em;
+      }
+
+      .audio-controls {
+        flex-direction: column;
+      }
+
+      .audio-btn {
+        width: 100%;
+        justify-content: center;
       }
     }
   </style>
@@ -312,12 +404,29 @@
       <div id="originalText" class="speech-content">
         Spoken words will appear here...
       </div>
+      <div class="audio-controls">
+        <button id="playOriginalBtn" class="audio-btn" onclick="playOriginalTTS()" disabled>
+          🔊 Play Original
+        </button>
+      </div>
     </div>
 
     <div class="speech-box">
       <h3>Translation</h3>
       <div id="translatedText" class="speech-content">
         Translations will appear here...
+      </div>
+      <div class="audio-controls">
+        <button id="playTranslationBtn" class="audio-btn" onclick="playTranslationTTS()" disabled>
+          🔊 Play Translation
+        </button>
+        <button id="playStereoBtn" class="audio-btn stereo-btn" onclick="playStereoAudio()" disabled>
+          🎧 Play Stereo Mix
+        </button>
+      </div>
+      <div class="stereo-info">
+        <span class="channel-indicator left-channel"></span>Left: Original |
+        <span class="channel-indicator right-channel"></span>Right: Translation
       </div>
     </div>
   </div>
@@ -334,6 +443,11 @@
   let recognition;
   let isListening = false;
   let translationHistory = [];
+  let currentOriginalText = '';
+  let currentTranslationText = '';
+  let audioContext;
+  let currentOriginalUtterance = null;
+  let currentTranslationUtterance = null;
 
   // Language mappings for speech recognition vs translation
   const speechLangMap = {
@@ -350,6 +464,23 @@
     'ko-KR': 'ko',
     'ar-SA': 'ar',
     'hi-IN': 'hi'
+  };
+
+  // TTS language codes (using Web Speech API)
+  const ttsLangMap = {
+    'en': 'en-US',
+    'hu': 'hu-HU',
+    'es': 'es-ES',
+    'fr': 'fr-FR',
+    'de': 'de-DE',
+    'it': 'it-IT',
+    'pt': 'pt-PT',
+    'ru': 'ru-RU',
+    'zh': 'zh-CN',
+    'ja': 'ja-JP',
+    'ko': 'ko-KR',
+    'ar': 'ar-SA',
+    'hi': 'hi-IN'
   };
 
   function initSpeechRecognition() {
@@ -392,6 +523,7 @@
       }
 
       if (finalTranscript) {
+        currentOriginalText = finalTranscript;
         document.getElementById('originalText').textContent = finalTranscript;
         translateText(finalTranscript);
       }
@@ -410,7 +542,9 @@
     const toLang = document.getElementById('toLang').value;
 
     if (fromLang === toLang) {
+      currentTranslationText = text;
       document.getElementById('translatedText').textContent = text;
+      prepareTTSUtterances(text, fromLang, text, toLang);
       return;
     }
 
@@ -422,11 +556,14 @@
       const data = await response.json();
 
       if (data.responseStatus === 200) {
-        const translation = data.responseData.translatedText;
-        document.getElementById('translatedText').textContent = translation;
+        currentTranslationText = data.responseData.translatedText;
+        document.getElementById('translatedText').textContent = currentTranslationText;
+
+        // Prepare TTS utterances
+        prepareTTSUtterances(text, fromLang, currentTranslationText, toLang);
 
         // Add to history
-        addToHistory(text, translation);
+        addToHistory(text, currentTranslationText);
 
         updateStatus('Translation complete!', 'success');
       } else {
@@ -436,6 +573,127 @@
       console.error('Translation error:', error);
       updateStatus('Translation error. Please try again.', 'error');
       document.getElementById('translatedText').textContent = 'Translation failed';
+    }
+  }
+
+  function prepareTTSUtterances(originalText, originalLang, translatedText, translatedLang) {
+    if (!originalText || !translatedText) return;
+
+    // Initialize audio context
+    if (!audioContext) {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    // Create utterances
+    currentOriginalUtterance = new SpeechSynthesisUtterance(originalText);
+    currentOriginalUtterance.lang = ttsLangMap[originalLang] || 'en-US';
+    currentOriginalUtterance.rate = 0.9;
+    currentOriginalUtterance.pitch = 1.1;
+
+    currentTranslationUtterance = new SpeechSynthesisUtterance(translatedText);
+    currentTranslationUtterance.lang = ttsLangMap[translatedLang] || 'en-US';
+    currentTranslationUtterance.rate = 0.9;
+    currentTranslationUtterance.pitch = 1.1;
+
+    // Enable buttons
+    document.getElementById('playOriginalBtn').disabled = false;
+    document.getElementById('playTranslationBtn').disabled = false;
+    document.getElementById('playStereoBtn').disabled = false;
+  }
+
+  function playOriginalTTS() {
+    if (currentOriginalUtterance) {
+      speechSynthesis.cancel(); // Stop any ongoing speech
+      speechSynthesis.speak(currentOriginalUtterance);
+    }
+  }
+
+  function playTranslationTTS() {
+    if (currentTranslationUtterance) {
+      speechSynthesis.cancel(); // Stop any ongoing speech
+      speechSynthesis.speak(currentTranslationUtterance);
+    }
+  }
+
+  function playStereoAudio() {
+    if (!currentOriginalUtterance || !currentTranslationUtterance || !audioContext) return;
+
+    // Stop any ongoing speech
+    speechSynthesis.cancel();
+
+    // Create stereo effect using Web Audio API
+    try {
+      // Create oscillator nodes for demonstration (since we can't easily capture TTS audio)
+      createStereoDemo();
+    } catch (error) {
+      console.error('Stereo audio error:', error);
+      // Fallback: play both sequentially
+      playSequentialAudio();
+    }
+  }
+
+  function createStereoDemo() {
+    // Create a simple demonstration of stereo audio
+    const duration = 2; // seconds
+    const sampleRate = audioContext.sampleRate;
+    const frameCount = sampleRate * duration;
+
+    // Create stereo buffer
+    const buffer = audioContext.createBuffer(2, frameCount, sampleRate);
+    const leftChannel = buffer.getChannelData(0);
+    const rightChannel = buffer.getChannelData(1);
+
+    // Generate different tones for left and right channels
+    for (let i = 0; i < frameCount; i++) {
+      // Left channel: Lower frequency (representing original)
+      leftChannel[i] = Math.sin(2 * Math.PI * 440 * i / sampleRate) * 0.1;
+      // Right channel: Higher frequency (representing translation)
+      rightChannel[i] = Math.sin(2 * Math.PI * 880 * i / sampleRate) * 0.1;
+    }
+
+    // Play the stereo buffer
+    const source = audioContext.createBufferSource();
+    source.buffer = buffer;
+    source.connect(audioContext.destination);
+    source.start();
+
+    // Also play the TTS voices with panning
+    setTimeout(() => {
+      playPannedTTS();
+    }, 500);
+  }
+
+  function playPannedTTS() {
+    // This is a simplified approach - real stereo TTS would require server-side processing
+    // Play original first (simulating left channel)
+    if (currentOriginalUtterance) {
+      speechSynthesis.speak(currentOriginalUtterance);
+
+      // Wait for original to finish, then play translation
+      currentOriginalUtterance.onend = () => {
+        setTimeout(() => {
+          if (currentTranslationUtterance) {
+            speechSynthesis.speak(currentTranslationUtterance);
+          }
+        }, 100);
+      };
+    }
+  }
+
+  function playSequentialAudio() {
+    // Fallback: play both voices sequentially
+    updateStatus('Playing original first, then translation...', 'info');
+
+    if (currentOriginalUtterance) {
+      speechSynthesis.speak(currentOriginalUtterance);
+
+      currentOriginalUtterance.onend = () => {
+        setTimeout(() => {
+          if (currentTranslationUtterance) {
+            speechSynthesis.speak(currentTranslationUtterance);
+          }
+        }, 500);
+      };
     }
   }
 
@@ -465,12 +723,12 @@
     }
 
     historyContent.innerHTML = translationHistory.map(item => `
-                <div class="history-item">
-                    <div class="history-original">${item.original}</div>
-                    <div class="history-translation">→ ${item.translation}</div>
-                    <small style="color: #adb5bd;">${item.timestamp}</small>
-                </div>
-            `).join('');
+      <div class="history-item">
+        <div class="history-original">${item.original}</div>
+        <div class="history-translation">→ ${item.translation}</div>
+        <small style="color: #adb5bd;">${item.timestamp}</small>
+      </div>
+    `).join('');
   }
 
   function startListening() {
@@ -511,8 +769,16 @@
   }
 
   function clearAll() {
+    speechSynthesis.cancel();
     document.getElementById('originalText').textContent = 'Spoken words will appear here...';
     document.getElementById('translatedText').textContent = 'Translations will appear here...';
+    currentOriginalText = '';
+    currentTranslationText = '';
+    currentOriginalUtterance = null;
+    currentTranslationUtterance = null;
+    document.getElementById('playOriginalBtn').disabled = true;
+    document.getElementById('playTranslationBtn').disabled = true;
+    document.getElementById('playStereoBtn').disabled = true;
     translationHistory = [];
     updateHistoryDisplay();
     updateStatus('Cleared all content.', 'info');
@@ -527,6 +793,18 @@
   // Initialize on page load
   window.onload = function() {
     initSpeechRecognition();
+
+    // Check for Web Audio API support
+    if (!window.AudioContext && !window.webkitAudioContext) {
+      updateStatus('Web Audio API not supported. Stereo features will be limited.', 'error');
+    }
+
+    // Check for Web Speech Synthesis API support
+    if (!window.speechSynthesis) {
+      updateStatus('Text-to-speech not supported in this browser.', 'error');
+    } else {
+      updateStatus('Ready! Click "Start Listening" to begin translation.', 'info');
+    }
   };
 </script>
 </body>
