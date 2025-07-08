@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real-Time Voice Translator</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+      max-width: 800px;
+      width: 100%;
+      backdrop-filter: blur(10px);
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 30px;
+      font-size: 2.5em;
+      font-weight: 300;
+    }
+
+    .language-selector {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      gap: 20px;
+    }
+
+    .lang-group {
+      flex: 1;
+      text-align: center;
+    }
+
+    .lang-group label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: #555;
+    }
+
+    select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      font-size: 16px;
+      background: white;
+      transition: border-color 0.3s;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .swap-btn {
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      font-size: 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 25px;
+    }
+
+    .swap-btn:hover {
+      background: #5a6fd8;
+      transform: rotate(180deg);
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .control-btn {
+      background: linear-gradient(45deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 50px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .control-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .control-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .listening {
+      background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    .translation-area {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .speech-box {
+      background: #f8f9fa;
+      border: 2px solid #e9ecef;
+      border-radius: 15px;
+      padding: 20px;
+      min-height: 150px;
+      position: relative;
+    }
+
+    .speech-box h3 {
+      margin-bottom: 15px;
+      color: #495057;
+      font-size: 1.2em;
+    }
+
+    .speech-content {
+      font-size: 18px;
+      line-height: 1.6;
+      color: #333;
+      min-height: 100px;
+      overflow-y: auto;
+    }
+
+    .status {
+      text-align: center;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-weight: 500;
+    }
+
+    .status.info {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+
+    .status.error {
+      background: #ffebee;
+      color: #c62828;
+    }
+
+    .status.success {
+      background: #e8f5e8;
+      color: #2e7d32;
+    }
+
+    .microphone-icon {
+      font-size: 24px;
+    }
+
+    .history {
+      margin-top: 20px;
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 15px;
+      background: #f8f9fa;
+    }
+
+    .history-item {
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .history-item:last-child {
+      border-bottom: none;
+    }
+
+    .history-original {
+      font-weight: 600;
+      color: #495057;
+    }
+
+    .history-translation {
+      color: #6c757d;
+      font-style: italic;
+    }
+
+    @media (max-width: 768px) {
+      .translation-area {
+        grid-template-columns: 1fr;
+      }
+
+      .language-selector {
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .swap-btn {
+        margin-top: 0;
+        transform: rotate(90deg);
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>🌍 Real-Time Voice Translator</h1>
+
+  <div class="language-selector">
+    <div class="lang-group">
+      <label for="fromLang">From (Speaking):</label>
+      <select id="fromLang">
+        <option value="en-US">English (US)</option>
+        <option value="hu-HU">Hungarian</option>
+        <option value="es-ES">Spanish</option>
+        <option value="fr-FR">French</option>
+        <option value="de-DE">German</option>
+        <option value="it-IT">Italian</option>
+        <option value="pt-PT">Portuguese</option>
+        <option value="ru-RU">Russian</option>
+        <option value="zh-CN">Chinese (Mandarin)</option>
+        <option value="ja-JP">Japanese</option>
+        <option value="ko-KR">Korean</option>
+        <option value="ar-SA">Arabic</option>
+        <option value="hi-IN">Hindi</option>
+      </select>
+    </div>
+
+    <button class="swap-btn" onclick="swapLanguages()">⇄</button>
+
+    <div class="lang-group">
+      <label for="toLang">To (Translation):</label>
+      <select id="toLang">
+        <option value="en">English</option>
+        <option value="hu">Hungarian</option>
+        <option value="es">Spanish</option>
+        <option value="fr">French</option>
+        <option value="de">German</option>
+        <option value="it">Italian</option>
+        <option value="pt">Portuguese</option>
+        <option value="ru">Russian</option>
+        <option value="zh">Chinese</option>
+        <option value="ja">Japanese</option>
+        <option value="ko">Korean</option>
+        <option value="ar">Arabic</option>
+        <option value="hi">Hindi</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="startBtn" class="control-btn" onclick="startListening()">
+      <span class="microphone-icon">🎤</span>
+      Start Listening
+    </button>
+    <button id="stopBtn" class="control-btn" onclick="stopListening()" disabled>
+      <span>⏹️</span>
+      Stop
+    </button>
+    <button class="control-btn" onclick="clearAll()">
+      <span>🗑️</span>
+      Clear
+    </button>
+  </div>
+
+  <div id="status" class="status info">
+    Click "Start Listening" to begin translation
+  </div>
+
+  <div class="translation-area">
+    <div class="speech-box">
+      <h3>Original Speech</h3>
+      <div id="originalText" class="speech-content">
+        Spoken words will appear here...
+      </div>
+    </div>
+
+    <div class="speech-box">
+      <h3>Translation</h3>
+      <div id="translatedText" class="speech-content">
+        Translations will appear here...
+      </div>
+    </div>
+  </div>
+
+  <div class="history">
+    <h3>Translation History</h3>
+    <div id="historyContent">
+      <p style="color: #6c757d; font-style: italic;">Translation history will appear here...</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  let recognition;
+  let isListening = false;
+  let translationHistory = [];
+
+  // Language mappings for speech recognition vs translation
+  const speechLangMap = {
+    'en-US': 'en',
+    'hu-HU': 'hu',
+    'es-ES': 'es',
+    'fr-FR': 'fr',
+    'de-DE': 'de',
+    'it-IT': 'it',
+    'pt-PT': 'pt',
+    'ru-RU': 'ru',
+    'zh-CN': 'zh',
+    'ja-JP': 'ja',
+    'ko-KR': 'ko',
+    'ar-SA': 'ar',
+    'hi-IN': 'hi'
+  };
+
+  function initSpeechRecognition() {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      updateStatus('Speech recognition not supported in this browser. Please use Chrome, Edge, or Safari.', 'error');
+      return false;
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = document.getElementById('fromLang').value;
+
+    recognition.onstart = function() {
+      isListening = true;
+      updateStatus('Listening... Speak now!', 'success');
+      document.getElementById('startBtn').disabled = true;
+      document.getElementById('startBtn').classList.add('listening');
+      document.getElementById('stopBtn').disabled = false;
+    };
+
+    recognition.onend = function() {
+      isListening = false;
+      document.getElementById('startBtn').disabled = false;
+      document.getElementById('startBtn').classList.remove('listening');
+      document.getElementById('stopBtn').disabled = true;
+      updateStatus('Stopped listening. Click "Start Listening" to resume.', 'info');
+    };
+
+    recognition.onresult = function(event) {
+      let finalTranscript = '';
+
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript;
+        }
+      }
+
+      if (finalTranscript) {
+        document.getElementById('originalText').textContent = finalTranscript;
+        translateText(finalTranscript);
+      }
+    };
+
+    recognition.onerror = function(event) {
+      console.error('Speech recognition error:', event.error);
+      updateStatus('Speech recognition error: ' + event.error, 'error');
+    };
+
+    return true;
+  }
+
+  async function translateText(text) {
+    const fromLang = speechLangMap[document.getElementById('fromLang').value];
+    const toLang = document.getElementById('toLang').value;
+
+    if (fromLang === toLang) {
+      document.getElementById('translatedText').textContent = text;
+      return;
+    }
+
+    try {
+      updateStatus('Translating...', 'info');
+
+      // Using MyMemory Translation API (free)
+      const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${fromLang}|${toLang}`);
+      const data = await response.json();
+
+      if (data.responseStatus === 200) {
+        const translation = data.responseData.translatedText;
+        document.getElementById('translatedText').textContent = translation;
+
+        // Add to history
+        addToHistory(text, translation);
+
+        updateStatus('Translation complete!', 'success');
+      } else {
+        throw new Error('Translation failed');
+      }
+    } catch (error) {
+      console.error('Translation error:', error);
+      updateStatus('Translation error. Please try again.', 'error');
+      document.getElementById('translatedText').textContent = 'Translation failed';
+    }
+  }
+
+  function addToHistory(original, translation) {
+    const historyItem = {
+      original: original,
+      translation: translation,
+      timestamp: new Date().toLocaleTimeString()
+    };
+
+    translationHistory.unshift(historyItem);
+
+    // Keep only last 10 items
+    if (translationHistory.length > 10) {
+      translationHistory = translationHistory.slice(0, 10);
+    }
+
+    updateHistoryDisplay();
+  }
+
+  function updateHistoryDisplay() {
+    const historyContent = document.getElementById('historyContent');
+
+    if (translationHistory.length === 0) {
+      historyContent.innerHTML = '<p style="color: #6c757d; font-style: italic;">Translation history will appear here...</p>';
+      return;
+    }
+
+    historyContent.innerHTML = translationHistory.map(item => `
+                <div class="history-item">
+                    <div class="history-original">${item.original}</div>
+                    <div class="history-translation">→ ${item.translation}</div>
+                    <small style="color: #adb5bd;">${item.timestamp}</small>
+                </div>
+            `).join('');
+  }
+
+  function startListening() {
+    if (!recognition && !initSpeechRecognition()) {
+      return;
+    }
+
+    recognition.lang = document.getElementById('fromLang').value;
+    recognition.start();
+  }
+
+  function stopListening() {
+    if (recognition && isListening) {
+      recognition.stop();
+    }
+  }
+
+  function swapLanguages() {
+    const fromLang = document.getElementById('fromLang');
+    const toLang = document.getElementById('toLang');
+
+    // Create reverse mappings
+    const reverseMap = {};
+    for (let [speech, translation] of Object.entries(speechLangMap)) {
+      reverseMap[translation] = speech;
+    }
+
+    const currentFrom = fromLang.value;
+    const currentTo = toLang.value;
+
+    // Set new values
+    if (reverseMap[currentTo]) {
+      fromLang.value = reverseMap[currentTo];
+    }
+    if (speechLangMap[currentFrom]) {
+      toLang.value = speechLangMap[currentFrom];
+    }
+  }
+
+  function clearAll() {
+    document.getElementById('originalText').textContent = 'Spoken words will appear here...';
+    document.getElementById('translatedText').textContent = 'Translations will appear here...';
+    translationHistory = [];
+    updateHistoryDisplay();
+    updateStatus('Cleared all content.', 'info');
+  }
+
+  function updateStatus(message, type) {
+    const statusEl = document.getElementById('status');
+    statusEl.textContent = message;
+    statusEl.className = `status ${type}`;
+  }
+
+  // Initialize on page load
+  window.onload = function() {
+    initSpeechRecognition();
+  };
+</script>
+</body>
+</html>
