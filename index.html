@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Real-Time Voice Translator</title>
+  <title>Advanced Voice Translator</title>
   <style>
     * {
       margin: 0;
@@ -18,15 +18,15 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 20px;
+      padding: 10px;
     }
 
     .container {
       background: rgba(255, 255, 255, 0.95);
       border-radius: 20px;
-      padding: 30px;
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-      max-width: 800px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      max-width: 900px;
       width: 100%;
       backdrop-filter: blur(10px);
     }
@@ -34,21 +34,76 @@
     h1 {
       text-align: center;
       color: #333;
-      margin-bottom: 30px;
-      font-size: 2.5em;
+      margin-bottom: 20px;
+      font-size: 2em;
       font-weight: 300;
+    }
+
+    .settings-panel {
+      background: #f8f9fa;
+      border-radius: 15px;
+      padding: 15px;
+      margin-bottom: 20px;
+      border: 1px solid #e9ecef;
+    }
+
+    .settings-row {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .setting-group {
+      flex: 1;
+      min-width: 100%;
+    }
+
+    .setting-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+      color: #555;
+      font-size: 14px;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 16px;
+      background: white;
+      transition: border-color 0.3s;
+    }
+
+    select:focus, input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: auto;
+      margin: 0;
     }
 
     .language-selector {
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
       align-items: center;
-      margin-bottom: 30px;
-      gap: 20px;
+      margin-bottom: 20px;
+      gap: 15px;
     }
 
     .lang-group {
       flex: 1;
+      width: 100%;
       text-align: center;
     }
 
@@ -59,65 +114,47 @@
       color: #555;
     }
 
-    select {
-      width: 100%;
-      padding: 12px;
-      border: 2px solid #ddd;
-      border-radius: 10px;
-      font-size: 16px;
-      background: white;
-      transition: border-color 0.3s;
-    }
-
-    select:focus {
-      outline: none;
-      border-color: #667eea;
-    }
-
     .swap-btn {
       background: #667eea;
       color: white;
       border: none;
       border-radius: 50%;
-      width: 50px;
-      height: 50px;
+      width: 45px;
+      height: 45px;
       font-size: 20px;
       cursor: pointer;
       transition: all 0.3s;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-top: 25px;
+      transform: rotate(90deg);
     }
 
     .swap-btn:hover {
       background: #5a6fd8;
-      transform: rotate(180deg);
     }
 
     .controls {
       display: flex;
-      justify-content: center;
-      gap: 20px;
-      margin-bottom: 30px;
-      flex-wrap: wrap;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 20px;
     }
 
     .control-btn {
-      background: linear-gradient(45deg, #667eea, #7612da);
+      background: linear-gradient(45deg, #667eea, #764ba2);
       color: white;
       border: none;
-      padding: 15px 30px;
+      padding: 15px;
       border-radius: 50px;
-      font-size: 16px;
+      font-size: 18px;
       cursor: pointer;
       transition: all 0.3s;
       display: flex;
       align-items: center;
-      gap: 10px;
-      flex: 1 1 auto;
-      min-width: 120px;
       justify-content: center;
+      gap: 10px;
+      width: 100%;
     }
 
     .control-btn:hover {
@@ -142,9 +179,49 @@
       100% { transform: scale(1); }
     }
 
-    .translation-area {
+    .status {
+      text-align: center;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-weight: 500;
+      position: relative;
+    }
+
+    .status.info { background: #e3f2fd; color: #1976d2; }
+    .status.error { background: #ffebee; color: #c62828; }
+    .status.success { background: #e8f5e8; color: #2e7d32; }
+    .status.warning { background: #fff3e0; color: #f57c00; }
+
+    .performance-indicators {
       display: grid;
       grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .indicator {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .indicator-value {
+      font-size: 1.1em;
+      font-weight: bold;
+      color: #495057;
+    }
+
+    .indicator-label {
+      font-size: 0.8em;
+      color: #6c757d;
+    }
+
+    .translation-area {
+      display: grid;
+      grid-template-columns: 1fr;
       gap: 20px;
       margin-bottom: 20px;
     }
@@ -153,80 +230,53 @@
       background: #f8f9fa;
       border: 2px solid #e9ecef;
       border-radius: 15px;
-      padding: 20px;
+      padding: 15px;
       min-height: 150px;
       position: relative;
     }
 
     .speech-box h3 {
-      margin-bottom: 15px;
+      margin-bottom: 10px;
       color: #495057;
-      font-size: 1.2em;
+      font-size: 1.1em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
     .speech-content {
-      font-size: 18px;
+      font-size: 16px;
       line-height: 1.6;
       color: #333;
-      min-height: 100px;
+      min-height: 80px;
       overflow-y: auto;
     }
 
-    .status {
-      text-align: center;
-      padding: 15px;
-      border-radius: 10px;
-      margin-bottom: 20px;
+    .interim-text {
+      color: #6c757d;
+      font-style: italic;
+      opacity: 0.7;
+    }
+
+    .final-text {
+      color: #333;
       font-weight: 500;
     }
 
-    .status.info {
-      background: #e3f2fd;
-      color: #1976d2;
+    .cache-info {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #28a745;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: bold;
     }
 
-    .status.error {
-      background: #ffebee;
-      color: #c62828;
-    }
-
-    .status.success {
-      background: #e8f5e8;
-      color: #2e7d32;
-    }
-
-    .microphone-icon {
-      font-size: 24px;
-    }
-
-    .history {
-      margin-top: 20px;
-      max-height: 200px;
-      overflow-y: auto;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      padding: 15px;
-      background: #f8f9fa;
-    }
-
-    .history-item {
-      padding: 10px 0;
-      border-bottom: 1px solid #eee;
-    }
-
-    .history-item:last-child {
-      border-bottom: none;
-    }
-
-    .history-original {
-      font-weight: 600;
-      color: #495057;
-    }
-
-    .history-translation {
-      color: #6c757d;
-      font-style: italic;
-    }
+    .cache-info.cached { background: #28a745; }
+    .cache-info.new { background: #17a2b8; }
 
     .audio-controls {
       display: flex;
@@ -247,60 +297,149 @@
       display: flex;
       align-items: center;
       gap: 5px;
+      flex-grow: 1;
+      justify-content: center;
     }
 
     .audio-btn:hover {
       background: #45a049;
-      transform: translateY(-1px);
     }
 
     .audio-btn:disabled {
       background: #cccccc;
       cursor: not-allowed;
-      transform: none;
     }
 
-    @media (max-width: 768px) {
-      .translation-area {
-        grid-template-columns: 1fr;
-      }
+    .cache-stats {
+      background: #e9ecef;
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 20px;
+    }
 
-      .language-selector {
-        flex-direction: column;
-        gap: 15px;
-      }
+    .cache-stats h4 {
+      margin-bottom: 10px;
+      color: #495057;
+    }
 
-      .swap-btn {
-        margin-top: 0;
-        transform: rotate(90deg);
-      }
+    .cache-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+    }
 
-      .controls {
-        flex-direction: column;
-      }
+    .cache-item {
+      background: white;
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      border-left: 3px solid #667eea;
+    }
 
-      .control-btn {
-        width: 100%;
-      }
+    .cache-item strong {
+      color: #495057;
+    }
 
+    @media (min-width: 768px) {
+      body {
+        padding: 20px;
+      }
+      .container {
+        padding: 30px;
+      }
       h1 {
-        font-size: 1.8em;
+        font-size: 2.5em;
+        margin-bottom: 30px;
       }
-
-      .audio-controls {
-        flex-direction: column;
+      .settings-row {
+        flex-direction: row;
+        gap: 20px;
       }
-
-      .audio-btn {
-        width: 100%;
-        justify-content: center;
+      .language-selector {
+        flex-direction: row;
+        gap: 20px;
+      }
+      .swap-btn {
+        margin-top: 25px;
+        transform: rotate(0);
+      }
+      .controls {
+        flex-direction: row;
+      }
+      .control-btn {
+        width: auto;
+      }
+      .performance-indicators {
+        grid-template-columns: repeat(4, 1fr);
+      }
+      .translation-area {
+        grid-template-columns: 1fr 1fr;
       }
     }
   </style>
 </head>
 <body>
 <div class="container">
-  <h1>🌍 Real-Time Voice Translator</h1>
+  <h1>🚀 Advanced Voice Translator</h1>
+
+  <div class="settings-panel">
+    <h3>⚙️ Advanced Settings</h3>
+    <div class="settings-row">
+      <div class="setting-group">
+        <label for="translationEngine">Translation Engine:</label>
+        <select id="translationEngine">
+          <option value="mymemory">MyMemory (Free)</option>
+          <option value="google">Google Translate</option>
+          <option value="deepl">DeepL (Better)</option>
+        </select>
+      </div>
+      <div class="setting-group checkbox-group">
+        <input type="checkbox" id="enableCaching" checked>
+        <label for="enableCaching">Enable Caching</label>
+      </div>
+    </div>
+    <div class="settings-row">
+      <div class="setting-group checkbox-group">
+        <input type="checkbox" id="autoRestart" checked>
+        <label for="autoRestart">Auto-restart STT</label>
+      </div>
+      <div class="setting-group checkbox-group">
+        <input type="checkbox" id="realTimeTranslation" checked>
+        <label for="realTimeTranslation">Real-time Translation</label>
+      </div>
+    </div>
+    <div class="settings-row">
+      <div class="setting-group">
+        <label for="confidenceThreshold">Confidence Threshold:</label>
+        <input type="range" id="confidenceThreshold" min="0" max="1" step="0.1" value="0.7">
+        <span id="confidenceValue">0.7</span>
+      </div>
+      <div class="setting-group">
+        <label for="debounceDelay">Translation Delay (ms):</label>
+        <input type="range" id="debounceDelay" min="100" max="2000" step="100" value="800">
+        <span id="debounceValue">800</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="performance-indicators">
+    <div class="indicator">
+      <div class="indicator-value" id="latencyIndicator">0ms</div>
+      <div class="indicator-label">Latency</div>
+    </div>
+    <div class="indicator">
+      <div class="indicator-value" id="cacheHitRate">0%</div>
+      <div class="indicator-label">Cache Hit Rate</div>
+    </div>
+    <div class="indicator">
+      <div class="indicator-value" id="confidenceIndicator">0%</div>
+      <div class="indicator-label">Confidence</div>
+    </div>
+    <div class="indicator">
+      <div class="indicator-value" id="restartCount">0</div>
+      <div class="indicator-label">Auto-restarts</div>
+    </div>
+  </div>
 
   <div class="language-selector">
     <div class="lang-group">
@@ -346,36 +485,46 @@
 
   <div class="controls">
     <button id="startBtn" class="control-btn" onclick="startListening()">
-      <span class="microphone-icon">🎤</span>
+      <span>🎤</span>
       Start Listening
     </button>
     <button id="stopBtn" class="control-btn" onclick="stopListening()" disabled>
       <span>⏹️</span>
       Stop
     </button>
+    <button class="control-btn" onclick="clearCache()">
+      <span>🧹</span>
+      Clear Cache
+    </button>
     <button class="control-btn" onclick="clearAll()">
       <span>🗑️</span>
-      Clear
+      Clear All
     </button>
   </div>
 
   <div id="status" class="status info">
-    Click "Start Listening" to begin translation
+    Ready! Advanced optimizations enabled.
   </div>
 
   <div class="translation-area">
     <div class="speech-box">
-      <h3>Original Speech</h3>
+      <h3>🎙️ Original Speech</h3>
       <div id="originalText" class="speech-content">
-        Spoken words will appear here...
+        <div class="interim-text">Listening for speech...</div>
+      </div>
+      <div class="audio-controls">
+        <button id="playOriginalBtn" class="audio-btn" onclick="playOriginalTTS()" disabled>
+          🔊 Play Original
+        </button>
       </div>
     </div>
 
     <div class="speech-box">
-      <h3>Translation</h3>
+      <h3>🌐 Translation</h3>
       <div id="translatedText" class="speech-content">
-        Translations will appear here...
+        <div class="interim-text">Translations will appear here...</div>
       </div>
+      <div class="cache-info" id="cacheInfo" style="display: none;">CACHED</div>
       <div class="audio-controls">
         <button id="playTranslationBtn" class="audio-btn" onclick="playTranslationTTS()" disabled>
           🔊 Play Translation
@@ -384,59 +533,64 @@
     </div>
   </div>
 
-  <div class="history">
-    <h3>Translation History</h3>
-    <div id="historyContent">
-      <p style="color: #6c757d; font-style: italic;">Translation history will appear here...</p>
+  <div class="cache-stats">
+    <h4>📊 Translation Cache Statistics</h4>
+    <div id="cacheStatsGrid" class="cache-grid">
+      <div class="cache-item">
+        <strong>Total Entries:</strong> <span id="totalCacheEntries">0</span>
+      </div>
+      <div class="cache-item">
+        <strong>Cache Hits:</strong> <span id="cacheHits">0</span>
+      </div>
+      <div class="cache-item">
+        <strong>Cache Misses:</strong> <span id="cacheMisses">0</span>
+      </div>
+      <div class="cache-item">
+        <strong>Avg Response Time:</strong> <span id="avgResponseTime">0ms</span>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
+  // Advanced state management
   let recognition;
   let isListening = false;
-  let translationHistory = [];
+  let translationCache = new Map();
+  let performanceMetrics = {
+    latency: [],
+    cacheHits: 0,
+    cacheMisses: 0,
+    restarts: 0,
+    totalTranslations: 0
+  };
+
+  // Optimized variables
   let currentOriginalText = '';
   let currentTranslationText = '';
+  let interimText = '';
+  let translationTimeout;
+  let lastTranslationTime = 0;
+  let currentOriginalUtterance = null;
   let currentTranslationUtterance = null;
 
-  // Language mappings for speech recognition vs translation
+  // Language mappings
   const speechLangMap = {
-    'en-US': 'en',
-    'hu-HU': 'hu',
-    'es-ES': 'es',
-    'fr-FR': 'fr',
-    'de-DE': 'de',
-    'it-IT': 'it',
-    'pt-PT': 'pt',
-    'ru-RU': 'ru',
-    'zh-CN': 'zh',
-    'ja-JP': 'ja',
-    'ko-KR': 'ko',
-    'ar-SA': 'ar',
-    'hi-IN': 'hi'
+    'en-US': 'en', 'hu-HU': 'hu', 'es-ES': 'es', 'fr-FR': 'fr',
+    'de-DE': 'de', 'it-IT': 'it', 'pt-PT': 'pt', 'ru-RU': 'ru',
+    'zh-CN': 'zh', 'ja-JP': 'ja', 'ko-KR': 'ko', 'ar-SA': 'ar', 'hi-IN': 'hi'
   };
 
-  // TTS language codes (using Web Speech API)
   const ttsLangMap = {
-    'en': 'en-US',
-    'hu': 'hu-HU',
-    'es': 'es-ES',
-    'fr': 'fr-FR',
-    'de': 'de-DE',
-    'it': 'it-IT',
-    'pt': 'pt-PT',
-    'ru': 'ru-RU',
-    'zh': 'zh-CN',
-    'ja': 'ja-JP',
-    'ko': 'ko-KR',
-    'ar': 'ar-SA',
-    'hi': 'hi-IN'
+    'en': 'en-US', 'hu': 'hu-HU', 'es': 'es-ES', 'fr': 'fr-FR',
+    'de': 'de-DE', 'it': 'it-IT', 'pt': 'pt-PT', 'ru': 'ru-RU',
+    'zh': 'zh-CN', 'ja': 'ja-JP', 'ko': 'ko-KR', 'ar': 'ar-SA', 'hi': 'hi-IN'
   };
 
+  // Initialize speech recognition with optimizations
   function initSpeechRecognition() {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-      updateStatus('Speech recognition not supported in this browser. Please use Chrome, Edge, or Safari.', 'error');
+      updateStatus('Speech recognition not supported. Please use Chrome, Edge, or Safari.', 'error');
       return false;
     }
 
@@ -446,187 +600,248 @@
     recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = document.getElementById('fromLang').value;
+    recognition.maxAlternatives = 3;
 
     recognition.onstart = function() {
       isListening = true;
-      updateStatus('Listening... Speak now!', 'success');
-      document.getElementById('startBtn').disabled = true;
-      document.getElementById('startBtn').classList.add('listening');
-      document.getElementById('stopBtn').disabled = false;
+      updateStatus('🎤 Listening continuously... Speak now!', 'success');
+      updateControls();
     };
 
     recognition.onend = function() {
       isListening = false;
-      document.getElementById('startBtn').disabled = false;
-      document.getElementById('startBtn').classList.remove('listening');
-      document.getElementById('stopBtn').disabled = true;
-      updateStatus('Stopped listening. Click "Start Listening" to resume.', 'info');
+      updateControls();
+      
+      if (document.getElementById('autoRestart').checked && document.getElementById('startBtn').disabled) {
+        setTimeout(() => {
+          if (document.getElementById('startBtn').disabled) {
+            performanceMetrics.restarts++;
+            updatePerformanceIndicators();
+            startListening();
+          }
+        }, 100);
+      } else {
+        updateStatus('Stopped listening. Click "Start Listening" to resume.', 'info');
+      }
     };
 
     recognition.onresult = function(event) {
-      let finalTranscript = '';
-
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript;
-        if (event.results[i].isFinal) {
-          finalTranscript += transcript;
-        }
-      }
-
-      if (finalTranscript) {
-        currentOriginalText = finalTranscript;
-        document.getElementById('originalText').textContent = finalTranscript;
-        translateText(finalTranscript);
-      }
+      processResults(event);
     };
 
     recognition.onerror = function(event) {
       console.error('Speech recognition error:', event.error);
-      updateStatus('Speech recognition error: ' + event.error, 'error');
+      updateStatus(`STT Error: ${event.error}`, 'error');
+      
+      if (event.error === 'network' || event.error === 'service-not-allowed') {
+        setTimeout(() => {
+          if (document.getElementById('autoRestart').checked) {
+            startListening();
+          }
+        }, 1000);
+      }
     };
 
     return true;
   }
 
+  function processResults(event) {
+    let interimTranscript = '';
+    let finalTranscript = '';
+    let highestConfidence = 0;
+
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const result = event.results[i];
+      const transcript = result[0].transcript;
+      const confidence = result[0].confidence || 0;
+
+      if (result.isFinal) {
+        finalTranscript += transcript;
+        highestConfidence = Math.max(highestConfidence, confidence);
+      } else {
+        interimTranscript += transcript;
+      }
+    }
+
+    requestAnimationFrame(() => {
+      updateTranscriptionDisplay(finalTranscript, interimTranscript, highestConfidence);
+    });
+
+    if (finalTranscript) {
+      const confidenceThreshold = parseFloat(document.getElementById('confidenceThreshold').value);
+      
+      if (highestConfidence >= confidenceThreshold) {
+        currentOriginalText = finalTranscript;
+        
+        if (document.getElementById('realTimeTranslation').checked) {
+          debounceTranslation(finalTranscript);
+        }
+      } else {
+        updateStatus(`Low confidence (${(highestConfidence * 100).toFixed(1)}%). Try speaking more clearly.`, 'warning');
+      }
+    }
+  }
+
+  function debounceTranslation(text) {
+    clearTimeout(translationTimeout);
+    const delay = parseInt(document.getElementById('debounceDelay').value);
+    
+    translationTimeout = setTimeout(() => {
+      translateText(text);
+    }, delay);
+  }
+
   async function translateText(text) {
+    const startTime = performance.now();
     const fromLang = speechLangMap[document.getElementById('fromLang').value];
     const toLang = document.getElementById('toLang').value;
+    const cacheKey = `${fromLang}-${toLang}-${text.toLowerCase().trim()}`;
+
+    if (document.getElementById('enableCaching').checked && translationCache.has(cacheKey)) {
+      const cachedResult = translationCache.get(cacheKey);
+      currentTranslationText = cachedResult.translation;
+      
+      document.getElementById('translatedText').innerHTML = `<div class="final-text">${cachedResult.translation}</div>`;
+      showCacheInfo('cached');
+      
+      performanceMetrics.cacheHits++;
+      const responseTime = performance.now() - startTime;
+      performanceMetrics.latency.push(responseTime);
+      
+      updatePerformanceIndicators();
+      prepareTTSUtterances(text, fromLang, cachedResult.translation, toLang);
+      
+      updateStatus('Translation retrieved from cache!', 'success');
+      return;
+    }
 
     if (fromLang === toLang) {
       currentTranslationText = text;
-      document.getElementById('translatedText').textContent = text;
-      playTranslationTTS(text, toLang);
+      document.getElementById('translatedText').innerHTML = `<div class="final-text">${text}</div>`;
+      prepareTTSUtterances(text, fromLang, text, toLang);
       return;
     }
 
     try {
-      updateStatus('Translating...', 'info');
+      updateStatus('🔄 Translating...', 'info');
+      showCacheInfo('new');
 
-      // Using MyMemory Translation API (free)
-      const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${fromLang}|${toLang}`);
-      const data = await response.json();
-
-      if (data.responseStatus === 200) {
-        currentTranslationText = data.responseData.translatedText;
-        document.getElementById('translatedText').textContent = currentTranslationText;
-
-        // Play the translated audio automatically
-        playTranslationTTS(currentTranslationText, toLang);
-
-        // Add to history
-        addToHistory(text, currentTranslationText);
-
-        updateStatus('Translation complete!', 'success');
-      } else {
-        throw new Error('Translation failed');
+      const translation = await performTranslation(text, fromLang, toLang);
+      currentTranslationText = translation;
+      
+      if (document.getElementById('enableCaching').checked) {
+        translationCache.set(cacheKey, {
+          translation: translation,
+          timestamp: Date.now(),
+          fromLang: fromLang,
+          toLang: toLang
+        });
       }
+
+      document.getElementById('translatedText').innerHTML = `<div class="final-text">${translation}</div>`;
+      
+      performanceMetrics.cacheMisses++;
+      performanceMetrics.totalTranslations++;
+      const responseTime = performance.now() - startTime;
+      performanceMetrics.latency.push(responseTime);
+      
+      updatePerformanceIndicators();
+      prepareTTSUtterances(text, fromLang, translation, toLang);
+      
+      updateStatus('✅ Translation complete!', 'success');
+      
     } catch (error) {
       console.error('Translation error:', error);
-      updateStatus('Translation error. Please try again.', 'error');
-      document.getElementById('translatedText').textContent = 'Translation failed';
+      updateStatus(`Translation failed: ${error.message}`, 'error');
+      document.getElementById('translatedText').innerHTML = `<div class="interim-text">Translation failed</div>`;
     }
   }
 
-  function playTranslationTTS(text, langCode) {
-    if (!text || !window.speechSynthesis) return;
+  async function performTranslation(text, fromLang, toLang) {
+    const engine = document.getElementById('translationEngine').value;
+    
+    switch (engine) {
+      case 'google':
+        return await translateWithGoogle(text, fromLang, toLang);
+      case 'deepl':
+        return await translateWithDeepL(text, fromLang, toLang);
+      case 'mymemory':
+      default:
+        return await translateWithMyMemory(text, fromLang, toLang);
+    }
+  }
 
-    // Stop any ongoing speech
-    speechSynthesis.cancel();
+  async function translateWithMyMemory(text, fromLang, toLang) {
+    const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${fromLang}|${toLang}`);
+    const data = await response.json();
+    
+    if (data.responseStatus === 200) {
+      return data.responseData.translatedText;
+    } else {
+      throw new Error('MyMemory translation failed');
+    }
+  }
 
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = ttsLangMap[langCode] || 'en-US';
-    utterance.rate = 0.9;
-    utterance.pitch = 1.1; // Slightly robotic voice
+  async function translateWithGoogle(text, fromLang, toLang) {
+    updateStatus('Google Translate would require API key setup', 'warning');
+    return await translateWithMyMemory(text, fromLang, toLang);
+  }
 
-    currentTranslationUtterance = utterance;
-    speechSynthesis.speak(utterance);
+  async function translateWithDeepL(text, fromLang, toLang) {
+    updateStatus('DeepL would require API key setup', 'warning');
+    return await translateWithMyMemory(text, fromLang, toLang);
+  }
 
-    // Enable the play button in case user wants to replay
+  function updateTranscriptionDisplay(finalText, interimText, confidence) {
+    const originalEl = document.getElementById('originalText');
+    let html = '';
+    
+    if (finalText) {
+      html += `<div class="final-text">${finalText}</div>`;
+    }
+    if (interimText) {
+      html += `<div class="interim-text">${interimText}</div>`;
+    }
+    if (!finalText && !interimText) {
+      html = '<div class="interim-text">Listening for speech...</div>';
+    }
+    
+    originalEl.innerHTML = html;
+    
+    if (confidence > 0) {
+      document.getElementById('confidenceIndicator').textContent = `${(confidence * 100).toFixed(1)}%`;
+    }
+  }
+
+  function updatePerformanceIndicators() {
+    const latencyAvg = performanceMetrics.latency.length > 0 
+      ? performanceMetrics.latency.reduce((a, b) => a + b, 0) / performanceMetrics.latency.length 
+      : 0;
+    
+    const cacheHitRate = performanceMetrics.totalTranslations > 0 
+      ? (performanceMetrics.cacheHits / (performanceMetrics.cacheHits + performanceMetrics.cacheMisses)) * 100 
+      : 0;
+
+    document.getElementById('latencyIndicator').textContent = `${latencyAvg.toFixed(0)}ms`;
+    document.getElementById('cacheHitRate').textContent = `${cacheHitRate.toFixed(1)}%`;
+    document.getElementById('restartCount').textContent = performanceMetrics.restarts;
+    
+    document.getElementById('totalCacheEntries').textContent = translationCache.size;
+    document.getElementById('cacheHits').textContent = performanceMetrics.cacheHits;
+    document.getElementById('cacheMisses').textContent = performanceMetrics.cacheMisses;
+    document.getElementById('avgResponseTime').textContent = `${latencyAvg.toFixed(0)}ms`;
+  }
+
+  function prepareTTSUtterances(originalText, fromLang, translatedText, toLang) {
+    document.getElementById('playOriginalBtn').disabled = false;
     document.getElementById('playTranslationBtn').disabled = false;
   }
 
-  function addToHistory(original, translation) {
-    const historyItem = {
-      original: original,
-      translation: translation,
-      timestamp: new Date().toLocaleTimeString()
-    };
-
-    translationHistory.unshift(historyItem);
-
-    // Keep only last 10 items
-    if (translationHistory.length > 10) {
-      translationHistory = translationHistory.slice(0, 10);
-    }
-
-    updateHistoryDisplay();
-  }
-
-  function updateHistoryDisplay() {
-    const historyContent = document.getElementById('historyContent');
-
-    if (translationHistory.length === 0) {
-      historyContent.innerHTML = '<p style="color: #6c757d; font-style: italic;">Translation history will appear here...</p>';
-      return;
-    }
-
-    historyContent.innerHTML = translationHistory.map(item => `
-      <div class="history-item">
-        <div class="history-original">${item.original}</div>
-        <div class="history-translation">→ ${item.translation}</div>
-        <small style="color: #adb5bd;">${item.timestamp}</small>
-      </div>
-    `).join('');
-  }
-
-  function startListening() {
-    if (!recognition && !initSpeechRecognition()) {
-      return;
-    }
-
-    recognition.lang = document.getElementById('fromLang').value;
-    recognition.start();
-  }
-
-  function stopListening() {
-    if (recognition && isListening) {
-      recognition.stop();
-    }
-  }
-
-  function swapLanguages() {
-    const fromLang = document.getElementById('fromLang');
-    const toLang = document.getElementById('toLang');
-
-    // Create reverse mappings
-    const reverseMap = {};
-    for (let [speech, translation] of Object.entries(speechLangMap)) {
-      reverseMap[translation] = speech;
-    }
-
-    const currentFrom = fromLang.value;
-    const currentTo = toLang.value;
-
-    // Set new values
-    if (reverseMap[currentTo]) {
-      fromLang.value = reverseMap[currentTo];
-    }
-    if (speechLangMap[currentFrom]) {
-      toLang.value = speechLangMap[currentFrom];
-    }
-  }
-
-  function clearAll() {
-    speechSynthesis.cancel();
-    document.getElementById('originalText').textContent = 'Spoken words will appear here...';
-    document.getElementById('translatedText').textContent = 'Translations will appear here...';
-    currentOriginalText = '';
-    currentTranslationText = '';
-    currentTranslationUtterance = null;
-    document.getElementById('playTranslationBtn').disabled = true;
-    translationHistory = [];
-    updateHistoryDisplay();
-    updateStatus('Cleared all content.', 'info');
+  function showCacheInfo(type) {
+    const cacheInfo = document.getElementById('cacheInfo');
+    cacheInfo.style.display = 'block';
+    cacheInfo.className = `cache-info ${type}`;
+    cacheInfo.textContent = type === 'cached' ? 'CACHED' : 'NEW';
   }
 
   function updateStatus(message, type) {
@@ -635,17 +850,104 @@
     statusEl.className = `status ${type}`;
   }
 
-  // Initialize on page load
-  window.onload = function() {
-    initSpeechRecognition();
-
-    // Check for Web Speech Synthesis API support
-    if (!window.speechSynthesis) {
-      updateStatus('Text-to-speech not supported in this browser.', 'error');
+  function updateControls() {
+    document.getElementById('startBtn').disabled = isListening;
+    document.getElementById('stopBtn').disabled = !isListening;
+    
+    if (isListening) {
+      document.getElementById('startBtn').classList.add('listening');
     } else {
-      updateStatus('Ready! Click "Start Listening" to begin translation.', 'info');
+      document.getElementById('startBtn').classList.remove('listening');
     }
-  };
+  }
+
+  function startListening() {
+    if (!initSpeechRecognition()) return;
+    
+    recognition.lang = document.getElementById('fromLang').value;
+    recognition.start();
+  }
+
+  function stopListening() {
+    if (recognition) {
+      recognition.stop();
+    }
+  }
+
+  function clearCache() {
+    translationCache.clear();
+    performanceMetrics.cacheHits = 0;
+    performanceMetrics.cacheMisses = 0;
+    performanceMetrics.totalTranslations = 0;
+    performanceMetrics.latency = [];
+    updatePerformanceIndicators();
+    updateStatus('Translation cache cleared!', 'info');
+  }
+
+  function clearAll() {
+    clearCache();
+    document.getElementById('originalText').innerHTML = '<div class="interim-text">Listening for speech...</div>';
+    document.getElementById('translatedText').innerHTML = '<div class="interim-text">Translations will appear here...</div>';
+    document.getElementById('playOriginalBtn').disabled = true;
+    document.getElementById('playTranslationBtn').disabled = true;
+    document.getElementById('cacheInfo').style.display = 'none';
+    performanceMetrics.restarts = 0;
+    updatePerformanceIndicators();
+    updateStatus('All cleared. Ready to start again!', 'info');
+  }
+
+  function swapLanguages() {
+    const fromLang = document.getElementById('fromLang');
+    const toLang = document.getElementById('toLang');
+    const tempValue = fromLang.value;
+    
+    const toLangAsSpeechLang = Object.keys(speechLangMap).find(key => speechLangMap[key] === toLang.value);
+    
+    if (toLangAsSpeechLang) {
+      fromLang.value = toLangAsSpeechLang;
+      toLang.value = speechLangMap[tempValue];
+    } else {
+      updateStatus('Cannot swap to a language not supported for speech recognition.', 'warning');
+    }
+  }
+
+  function playTTS(text, langCode) {
+    if ('speechSynthesis' in window) {
+      speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = ttsLangMap[langCode] || langCode;
+      speechSynthesis.speak(utterance);
+    } else {
+      updateStatus('Text-to-speech not supported in this browser.', 'error');
+    }
+  }
+
+  function playOriginalTTS() {
+    if (currentOriginalText) {
+      playTTS(currentOriginalText, speechLangMap[document.getElementById('fromLang').value]);
+    }
+  }
+
+  function playTranslationTTS() {
+    if (currentTranslationText) {
+      playTTS(currentTranslationText, document.getElementById('toLang').value);
+    }
+  }
+
+  document.getElementById('confidenceThreshold').addEventListener('input', (e) => {
+    document.getElementById('confidenceValue').textContent = e.target.value;
+  });
+
+  document.getElementById('debounceDelay').addEventListener('input', (e) => {
+    document.getElementById('debounceValue').textContent = e.target.value;
+  });
+
+  // Initial setup
+  document.addEventListener('DOMContentLoaded', () => {
+    updateControls();
+    updatePerformanceIndicators();
+  });
 </script>
+
 </body>
 </html>
