@@ -458,7 +458,7 @@
         <option value="ko-KR">Korean</option>
         <option value="ar-SA">Arabic</option>
         <option value="hi-IN">Hindi</option>
-      </select>
+        <option value="nb-NO">Norwegian (Bokmål)</option> <option value="nn-NO">Norwegian (Nynorsk)</option> </select>
     </div>
 
     <button class="swap-btn" onclick="swapLanguages()">⇄</button>
@@ -479,7 +479,7 @@
         <option value="ko">Korean</option>
         <option value="ar">Arabic</option>
         <option value="hi">Hindi</option>
-      </select>
+        <option value="no">Norwegian</option> </select>
     </div>
   </div>
 
@@ -578,13 +578,16 @@
   const speechLangMap = {
     'en-US': 'en', 'hu-HU': 'hu', 'es-ES': 'es', 'fr-FR': 'fr',
     'de-DE': 'de', 'it-IT': 'it', 'pt-PT': 'pt', 'ru-RU': 'ru',
-    'zh-CN': 'zh', 'ja-JP': 'ja', 'ko-KR': 'ko', 'ar-SA': 'ar', 'hi-IN': 'hi'
+    'zh-CN': 'zh', 'ja-JP': 'ja', 'ko-KR': 'ko', 'ar-SA': 'ar', 'hi-IN': 'hi',
+    'nb-NO': 'no', // Added Norwegian Bokmål
+    'nn-NO': 'no'  // Added Norwegian Nynorsk
   };
 
   const ttsLangMap = {
     'en': 'en-US', 'hu': 'hu-HU', 'es': 'es-ES', 'fr': 'fr-FR',
     'de': 'de-DE', 'it': 'it-IT', 'pt': 'pt-PT', 'ru': 'ru-RU',
-    'zh': 'zh-CN', 'ja': 'ja-JP', 'ko': 'ko-KR', 'ar': 'ar-SA', 'hi': 'hi-IN'
+    'zh': 'zh-CN', 'ja': 'ja-JP', 'ko': 'ko-KR', 'ar': 'ar-SA', 'hi': 'hi-IN',
+    'no': 'nb-NO' // Using nb-NO as a common TTS for Norwegian
   };
 
   // Initialize speech recognition with optimizations
@@ -710,6 +713,7 @@
       
       updatePerformanceIndicators();
       prepareTTSUtterances(text, fromLang, cachedResult.translation, toLang);
+      playTranslationTTS(); // Play cached translation
       
       updateStatus('Translation retrieved from cache!', 'success');
       return;
@@ -719,6 +723,7 @@
       currentTranslationText = text;
       document.getElementById('translatedText').innerHTML = `<div class="final-text">${text}</div>`;
       prepareTTSUtterances(text, fromLang, text, toLang);
+      playTranslationTTS(); // Play original if languages are the same
       return;
     }
 
@@ -747,6 +752,7 @@
       
       updatePerformanceIndicators();
       prepareTTSUtterances(text, fromLang, translation, toLang);
+      playTranslationTTS(); // Play new translation
       
       updateStatus('✅ Translation complete!', 'success');
       
@@ -897,25 +903,48 @@
   }
 
   function swapLanguages() {
-    const fromLang = document.getElementById('fromLang');
-    const toLang = document.getElementById('toLang');
-    const tempValue = fromLang.value;
+    const fromLangSelect = document.getElementById('fromLang');
+    const toLangSelect = document.getElementById('toLang');
     
-    const toLangAsSpeechLang = Object.keys(speechLangMap).find(key => speechLangMap[key] === toLang.value);
-    
-    if (toLangAsSpeechLang) {
-      fromLang.value = toLangAsSpeechLang;
-      toLang.value = speechLangMap[tempValue];
+    const currentFromLang = fromLangSelect.value;
+    const currentToLang = toLangSelect.value;
+
+    const fromLangSpeechCode = speechLangMap[currentFromLang];
+    const toLangTranslationCode = currentToLang; // This is already the simplified code like 'no', 'en', etc.
+
+    // Find a speech recognition equivalent for the current target language
+    let potentialNewFromLang = null;
+    for (const key in speechLangMap) {
+        if (speechLangMap[key] === toLangTranslationCode) {
+            potentialNewFromLang = key;
+            break;
+        }
+    }
+
+    if (potentialNewFromLang) {
+        fromLangSelect.value = potentialNewFromLang;
+        // Attempt to map the original "from" language's translation code for the "to" select
+        const originalFromLangTranslationCode = speechLangMap[currentFromLang];
+        // Check if the originalFromLangTranslationCode is a valid option in the 'toLang' select
+        const toLangOptions = Array.from(toLangSelect.options).map(option => option.value);
+        if (toLangOptions.includes(originalFromLangTranslationCode)) {
+            toLangSelect.value = originalFromLangTranslationCode;
+        } else {
+            // Fallback to English if originalFromLangTranslationCode isn't a direct match for 'toLang'
+            toLangSelect.value = 'en'; 
+        }
+        updateStatus('Languages swapped!', 'info');
     } else {
-      updateStatus('Cannot swap to a language not supported for speech recognition.', 'warning');
+        updateStatus('Cannot swap to a language not supported for speech recognition.', 'warning');
     }
   }
+
 
   function playTTS(text, langCode) {
     if ('speechSynthesis' in window) {
       speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = ttsLangMap[langCode] || langCode;
+      utterance.lang = ttsLangMap[langCode] || langCode; // Use mapped TTS language or fallback
       speechSynthesis.speak(utterance);
     } else {
       updateStatus('Text-to-speech not supported in this browser.', 'error');
@@ -924,7 +953,7 @@
 
   function playOriginalTTS() {
     if (currentOriginalText) {
-      playTTS(currentOriginalText, speechLangMap[document.getElementById('fromLang').value]);
+      playTTS(currentOriginalText, document.getElementById('fromLang').value); // Use actual STT language for original TTS
     }
   }
 
